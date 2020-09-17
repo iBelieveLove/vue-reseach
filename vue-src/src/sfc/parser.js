@@ -75,6 +75,7 @@ export function parseComponent (
     }
   }
 
+  // 判断script/style等
   function checkAttrs (block: SFCBlock, attrs: Array<ASTAttr>) {
     for (let i = 0; i < attrs.length; i++) {
       const attr = attrs[i]
