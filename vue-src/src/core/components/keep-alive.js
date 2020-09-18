@@ -5,10 +5,12 @@ import { getFirstComponentChild } from 'core/vdom/helpers/index'
 
 type VNodeCache = { [key: string]: ?VNode };
 
+// 返回组件名
 function getComponentName (opts: ?VNodeComponentOptions): ?string {
   return opts && (opts.Ctor.options.name || opts.tag)
 }
 
+// 判断是否满足正则
 function matches (pattern: string | RegExp | Array<string>, name: string): boolean {
   if (Array.isArray(pattern)) {
     return pattern.indexOf(name) > -1
@@ -21,6 +23,7 @@ function matches (pattern: string | RegExp | Array<string>, name: string): boole
   return false
 }
 
+// 根据filter方法遍历cache中的node, 如果与current不一致时, 则删除cache中的引用
 function pruneCache (keepAliveInstance: any, filter: Function) {
   const { cache, keys, _vnode } = keepAliveInstance
   for (const key in cache) {
@@ -34,6 +37,7 @@ function pruneCache (keepAliveInstance: any, filter: Function) {
   }
 }
 
+// 判断cache中对应key值的vnode是否与current一致, 如果不一致则删除cache中的引用
 function pruneCacheEntry (
   cache: VNodeCache,
   key: string,
