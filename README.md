@@ -1,3 +1,5 @@
+# knowledge is power.
+# 芝士就是力量.
 ## Vue From Start To Give Up
 ## Vue 从入门到放弃
 

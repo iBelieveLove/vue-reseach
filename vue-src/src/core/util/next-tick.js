@@ -10,9 +10,10 @@ export let isUsingMicroTask = false
 const callbacks = []
 let pending = false
 
+// 依次执行callbacks函数
 function flushCallbacks () {
   pending = false
-  const copies = callbacks.slice(0)
+  const copies = callbacks.slice(0) // 这里就相当于完全拷贝
   callbacks.length = 0
   for (let i = 0; i < copies.length; i++) {
     copies[i]()

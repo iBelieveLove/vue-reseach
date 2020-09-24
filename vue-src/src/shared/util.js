@@ -47,6 +47,7 @@ export function isObject (obj: mixed): boolean %checks {
  */
 const _toString = Object.prototype.toString
 
+// 获取数据类型
 export function toRawType (value: any): string {
   return _toString.call(value).slice(8, -1)
 }

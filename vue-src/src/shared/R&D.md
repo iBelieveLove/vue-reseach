@@ -16,6 +16,9 @@ export function cached<F: Function> (fn: F): F {
 * polyfillBind 方法, 提供一个简单的绑定方法
 * looseEqual 方法, 比对对象, 如果是一个对象, 则他们的key值转化的string必须保持一致, 数组则需要完全一致
 * looseIndexOf 方法, 比对数组
+* `isPlainObject` 判断是否object, 通过toString方法进行判断
+* `isBuiltInTag` 判断是否slot, component中的一个
+* `extend` 继承父类的每一个属性
 
 # [constants.js](./constants.js)
 ### 定义常量

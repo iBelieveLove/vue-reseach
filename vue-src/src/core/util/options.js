@@ -19,7 +19,7 @@ import {
   capitalize,
   isBuiltInTag,
   isPlainObject
-} from 'shared/util'
+} from '../shared/util'
 
 /**
  * Option overwriting strategies are functions that handle
@@ -45,6 +45,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 /**
  * Helper that recursively merges two data objects together.
+ * 递归合并object, 但是, 不会覆盖目标对象中的值
  */
 function mergeData (to: Object, from: ?Object): Object {
   if (!from) return to
