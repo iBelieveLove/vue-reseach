@@ -35,6 +35,6 @@ function _traverse (val: any, seen: SimpleSet) {
   } else {
     keys = Object.keys(val)
     i = keys.length
-    while (i--) _traverse(val[keys[i]], seen)
+    while (i--) _traverse(val[keys[i]], seen) // val[keys[i]]会触发getter，触发收集依赖的操作???
   }
 }
