@@ -4,6 +4,7 @@ import { ASSET_TYPES } from 'shared/constants'
 import { isPlainObject, validateComponentName } from '../util/index'
 
 export function initAssetRegisters (Vue: GlobalAPI) {
+  console.warn('### assets.js initAssetRegisters', ASSET_TYPES);
   /**
    * Create asset registration methods.
    */
@@ -12,6 +13,7 @@ export function initAssetRegisters (Vue: GlobalAPI) {
       id: string,
       definition: Function | Object
     ): Function | Object | void {
+      console.warn('### assets.js', type, id, definition);
       if (!definition) {
         return this.options[type + 's'][id]
       } else {

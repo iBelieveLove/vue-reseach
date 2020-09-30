@@ -19,7 +19,7 @@ import {
   capitalize,
   isBuiltInTag,
   isPlainObject
-} from '../shared/util'
+} from 'shared/util'
 
 /**
  * Option overwriting strategies are functions that handle
