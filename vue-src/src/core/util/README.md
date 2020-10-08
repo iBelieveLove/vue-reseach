@@ -6,7 +6,8 @@
 
 ### env.js
 用于判断是否在浏览器以及什么浏览器, 判断是否server服务
-`isNative` 方法用于判断是否原生代码
+* `isNative` 方法用于判断是否原生代码
+* `Set` 提供一个简单的set对象
 
 ### error.js
 
