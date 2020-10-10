@@ -13,10 +13,10 @@
 ## array.js
 * `methodsToPatch` 定义变量, 然后替换array对应的原生protoType函数操作, 在调用对应函数方法时, 调用`ob.observeArray`方法通知列表更新, 然后调用`ob.dep.notify()` 通知观察者更新, 被替换的方法包括'push', 'pop', 'shift', 'unshift',  'splice', 'sort', 'reverse'
 
-## dep.js 抽象设置, 可以同时是观察者和主题
+## dep.js 父类, 可以同时是观察者和被观察主题
 * `export default class Dep` 在class中add/remove sub时, 将当前对象作为被观察者, 调用notify时, 此时通知所有的观察者更新事件, addDep 时将该方法作为其他事件的观察者设置, `notify` 依次调用所有观察者的update方法, 
 
-## scheduler.js 总入口为queueActivatedComponent用于插入keepalive队列, queueWatcher用于插入watcher并且执行方法
+## scheduler.js 总入口为: queueActivatedComponent用于插入keepalive队列, queueWatcher用于插入watcher并且执行方法
 * `resetSchedulerState` 重置所有变量
 * `getNow` 定义一个返回时间戳的函数, 如果是在浏览器中, 则优先使用`performance.now`, 否则使用`Date.now`
 * `callUpdatedHooks` 依次调用队列中的update钩子函数, 即指令定义对象的update回调
@@ -25,24 +25,25 @@
 * `queueWatcher` 将一个watcher插入队列, 然后在nextTick中调用`flushSchedulerQueue` 方法
 * `flushSchedulerQueue` 首先排序队列, 然后依次执行队列中的`watcher.before`和`watcher.run`, 调用`resetSchedulerState` 重置变量, 随后调用`callActivatedHooks` 和`callUpdatedHooks` 通知模块更新 
 
-## traverse.js
-* `traverse` 深度递归遍历对象, 在watcher中设置了`deep: true`时会调用, 如果是list, 则依次遍历所有值, 如果是对象, 则依次遍历key值, 并加入到set中
+## traverse.js 递归调用以触及, 不对外暴露
+* `traverse` 深度递归遍历对象, 在watcher中设置了`deep: true`时会调用, 如果是list, 则依次遍历所有值, 如果是对象, 则依次遍历key值, 并加入到set中, 在访问对应key值时, 会触发(index.js中)`Object.defineProperty`设置的getter函数, 此时会添加对应依赖项
 
-## watcher.js   `class Watcher`
+## watcher.js   `class Watcher`, 入口1
 * `constructor` 在构造函数中, 
-* `get` 计算getter函数, 然后重新收集依赖. 如果deep设置为true, 则执行`traverse`函数(还不明白在执行traverse函数时是如何收集的依赖)
+* `get` 计算getter函数, 然后重新收集依赖. 如果deep设置为true, 则执行`traverse`函数
 * `addDep` 添加一个依赖对象
-* `cleanupDeps` 清理旧依赖对象, 在get方法中重新收集依赖后调用
+* `cleanupDeps` 清理旧依赖对象, 在`get`方法中重新收集依赖后调用
 * `update` 依赖被修改时调用
 * `run` 当this.asyc为true时, update调用, 会先调用get方法后, 调用回调方法
 * `evaluate` 当lazy为true时调用, 计算get值
 * `depend` 设置所有收集的依赖项, 调用的是`dep.depend`
 * `teardown` 删除所有的依赖项
 
-## index.js 总入口
+## index.js 总入口2
+> https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty 使用`Object.defineProperty`来设置一个对象字段时, 如果设置了setter/getter方法, 则此时在访问对象字段/更新对象字段时, 会调用setter/getter方法.
 * `toggleObserving` 开关观察
 * `class Observer` 定义观察者, 并绑定到`__ob__`上, 如果当前对象是array, 则调用`observeArray`, 否则调用`walk`, 在内部绑定一个Dep对象
 * `observeArray` 对array中的每一个值依次调用`observe` 方法
 * `walk` 依次对object.keys的值调用`defineReactive`方法
 * `observe` 如果已经存在了`__ob__`属性, 则可以直接返回, 否则创建一个新的`Observer`对象进行监听
-* `defineReactive` 
+* `defineReactive` 给对象设置属性, 并且设置getter/setter方法, 在触发getter方法时, 会添加对应的依赖项, 触发setter方法时, 会调用上面的`observe`方法并且执行`dep.notify()`方法
