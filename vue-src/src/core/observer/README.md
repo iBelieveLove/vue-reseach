@@ -34,6 +34,10 @@
 
 
 ## watcher.js   `class Watcher`, 入口1
+> 结合Vue实例看watcher对象的创建, 有三种类型: 
+  1. Watch函数
+  2. getter函数 
+  3. Vue组件, 会把watcher对象存放在_watchers中
 ##### 属性
   * `vm: Component;` 当前vue对象
   * `expression: string;` 表达式, 类似task.id
@@ -49,7 +53,7 @@
   * `newDeps: Array<Dep>;` 重新收集依赖时使用, 收集完成后赋值给deps
   * `depIds: SimpleSet;` 当前依赖id
   * `newDepIds: SimpleSet;` 重新收集依赖时使用, 收集完成后赋值给depIds
-  * `before: ?Function;` 在watch.run函数执行前执行, 但不确定哪里定义的
+  * `before: ?Function;` 在watch.run函数执行前执行, 在新建watcher时赋值
   * `getter: Function;` 存放watch表达式的计算函数
   * `value: any;` 值
 ##### 函数
@@ -64,19 +68,19 @@
   * `depend` 设置所有收集的依赖项, 调用的是`dep.depend`
   * `teardown` 删除所有的依赖项, 此时watch函数不再生效
 
-## scheduler.js 总入口为: queueActivatedComponent用于插入keepalive队列, queueWatcher用于插入watcher并且执行方法
+## scheduler.js 主要为 queueActivatedComponent用于插入keepalive队列, queueWatcher用于插入watcher并且执行方法
 > 调度watcher方法
 * `resetSchedulerState` 重置所有变量
 * `getNow` 定义一个返回时间戳的函数, 如果是在浏览器中, 则优先使用`performance.now`, 否则使用`Date.now`
 * `callUpdatedHooks` 依次调用队列中的update钩子函数, 即指令定义对象的update回调
-* `queueActivatedComponent` 插入一个keep-alive对象到active队列中, 并将_inactive置为false
+* **`queueActivatedComponent` 插入一个keep-alive对象到active队列中, 并将_inactive置为false**
 * `callActivatedHooks` 依次active队列中的对象的_inactive置为true, 然后激活对象的子模块, 调用对象的activated钩子函数(注意子模块的钩子函数先执行)
-* `queueWatcher` 将一个watcher插入队列, 然后在nextTick中调用`flushSchedulerQueue` 方法
-* `flushSchedulerQueue` 首先排序队列, 然后依次执行队列中的`watcher.before`和`watcher.run`, 调用`resetSchedulerState` 重置变量, 随后调用`callActivatedHooks` 和`callUpdatedHooks` 通知模块更新 
+* **`queueWatcher` 将一个watcher插入队列, 然后在nextTick中调用`flushSchedulerQueue` 方法**
+* `flushSchedulerQueue` 首先排序队列, 然后依次执行队列中的`watcher.before`和`watcher.run`, 调用`resetSchedulerState` 重置变量, 随后调用`callActivatedHooks` 和`callUpdatedHooks` 通知模块更新
 
-## index.js 总入口2
+## index.js 总入口
 * `toggleObserving` 开关观察
-* `class Observer` 定义观察者, 并绑定到`__ob__`上, 如果当前对象是array, 则调用`observeArray`, 否则调用`walk`, 在内部绑定一个Dep对象
+* `class Observer` 定义观察者, 并绑定到`__ob__`上, 如果当前对象是array, 则调用`observeArray`, 否则调用`walk`, 并在内部绑定一个Dep对象
 * `observeArray` 对array中的每一个值依次调用`observe` 方法
 * `walk` 依次对object.keys的值调用`defineReactive`方法
 * `observe` 如果已经存在了`__ob__`属性, 则可以直接返回, 否则创建一个新的`Observer`对象进行监听
