@@ -12,12 +12,17 @@ import {
 } from 'shared/util'
 
 type PropOptions = {
-  type: Function | Array<Function> | null,
+  type: Function | Array<Function> | null, // 这里的Function特指Boolean, String, Number这种
   default: any,
   required: ?boolean,
   validator: ?Function
 };
 
+/**
+ * @description 获取 props[key] 的默认值
+ * @param propOptions { [key: string]: PropOptions } 是key: PropOptions的map
+ * @param propsData { [key: string]: any } 是key: 对应propValue的map
+ */
 export function validateProp (
   key: string,
   propOptions: Object,
@@ -28,6 +33,7 @@ export function validateProp (
   const absent = !hasOwn(propsData, key)
   let value = propsData[key]
   // boolean casting
+  // 如果当前的是布尔类型的话, 则进行强制转换
   const booleanIndex = getTypeIndex(Boolean, prop.type)
   if (booleanIndex > -1) {
     if (absent && !hasOwn(prop, 'default')) {
@@ -42,6 +48,7 @@ export function validateProp (
     }
   }
   // check default value
+  // 使用默认值, 然后进行监听
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
@@ -81,6 +88,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
   }
   // the raw prop value was also undefined from previous render,
   // return previous default value to avoid unnecessary watcher trigger
+  // 这里没明白, 实际在什么场景下生效
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined
@@ -96,6 +104,7 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
 
 /**
  * Assert whether a prop is valid.
+ * 报错信息, 忽略
  */
 function assertProp (
   prop: PropOptions,
@@ -147,7 +156,7 @@ function assertProp (
 }
 
 const simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/
-
+// 报错信息, 忽略
 function assertType (value: any, type: Function): {
   valid: boolean;
   expectedType: string;
@@ -179,6 +188,9 @@ function assertType (value: any, type: Function): {
  * because a simple equality check will fail when running
  * across different vms / iframes.
  */
+/**
+ * 当传入的值是内置对象类型时, 返回对象类型的string, 比如传入fn = Boolean, 返回'Boolean'
+*/
 function getType (fn) {
   const match = fn && fn.toString().match(/^\s*function (\w+)/)
   return match ? match[1] : ''
@@ -187,7 +199,7 @@ function getType (fn) {
 function isSameType (a, b) {
   return getType(a) === getType(b)
 }
-
+// 获取对应类型index, 如果不存在时返回-1
 function getTypeIndex (type, expectedTypes): number {
   if (!Array.isArray(expectedTypes)) {
     return isSameType(expectedTypes, type) ? 0 : -1
@@ -200,6 +212,7 @@ function getTypeIndex (type, expectedTypes): number {
   return -1
 }
 
+// 打印错误日志, 忽略
 function getInvalidTypeMessage (name, value, expectedTypes) {
   let message = `Invalid prop: type check failed for prop "${name}".` +
     ` Expected ${expectedTypes.map(capitalize).join(', ')}`
@@ -220,7 +233,7 @@ function getInvalidTypeMessage (name, value, expectedTypes) {
   }
   return message
 }
-
+// 打印错误日志, 忽略
 function styleValue (value, type) {
   if (type === 'String') {
     return `"${value}"`
@@ -230,12 +243,12 @@ function styleValue (value, type) {
     return `${value}`
   }
 }
-
+// 打印错误日志, 忽略
 function isExplicable (value) {
   const explicitTypes = ['string', 'number', 'boolean']
   return explicitTypes.some(elem => value.toLowerCase() === elem)
 }
-
+// 打印错误日志, 忽略
 function isBoolean (...args) {
   return args.some(elem => elem.toLowerCase() === 'boolean')
 }
