@@ -27,7 +27,7 @@ var data = {
     }
   ]
 }
-
+debugger;
 // define the item component
 Vue.component('item', {
   template: '#item-template',

@@ -29,6 +29,7 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
+// 在init.js中执行到这里
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
@@ -333,9 +334,10 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+// 调用生命周期钩子函数
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
-  pushTarget()
+  pushTarget() // 调用生命周期函数时先关闭依赖收集
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
   if (handlers) {
