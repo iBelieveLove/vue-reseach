@@ -182,7 +182,7 @@ export function defineReactive (
 ) {
   // 实例化 dep，一个 key 一个 dep
   const dep = new Dep()
-  // 获取 obj[key] 的属性描述符，发现它是不可配置对象的话直接 return
+  // 获取 obj[key] 的属性描述符，发现它是不可配置对象的话直接 return(如使用Object.freeze创建的对象)
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
@@ -205,17 +205,20 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       /**
-       * Dep.target 为 Dep 类的一个静态属性，值为 watcher，在实例化 Watcher 时会被设置
+       * Dep.target 为 Dep 类的一个静态属性，值为 watcher实例，在实例化 Watcher 时会被设置
        * 实例化 Watcher 时会执行 new Watcher 时传递的回调函数（computed 除外，因为它懒执行）
        * 而回调函数中如果有 vm.key 的读取行为，则会触发这里的 读取 拦截，进行依赖收集
        * 回调函数执行完以后又会将 Dep.target 设置为 null，避免这里重复收集依赖
+       * 
+       * 1. 在执行watcher.get方法时, 将当前watcher进行pushTarget, 然后执行对应的getter方法(对应computed属性的话就是计算函数, 对应watch方法的时候就是对应的属性)
+       * 2. getter方法触发此处的函数, 然后执行dep.depend添加依赖属性, 进而收集依赖.
        */
       if (Dep.target) {
         // 依赖收集，在 dep 中添加 watcher，也在 watcher 中添加 dep
         dep.depend()
         // childOb 表示对象中嵌套对象的观察者对象，如果存在也对其进行依赖收集
         if (childOb) {
-          // 这就是 this.key.chidlKey 被更新时能触发响应式更新的原因
+          // 这就是 this.key.childKey 被更新时能触发响应式更新的原因
           childOb.dep.depend()
           // 如果是 obj[key] 是 数组，则触发数组响应式
           if (Array.isArray(value)) {

@@ -16,7 +16,7 @@ import {
 import {
   warn,
   bind,
-  noop,
+  noop, // 空函数
   hasOwn,
   hyphenate,
   isReserved,
@@ -155,6 +155,7 @@ function initProps (vm: Component, propsOptions: Object) {
  */
 function initData (vm: Component) {
   let data = vm.$options.data
+  // 获取data属性时, 会传入当前vm实例
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
@@ -275,7 +276,7 @@ function initComputed (vm: Component, computed: Object) {
 }
 
 /**
- * 代理 computed 对象中的 key 到 target（vm）上
+ * 代理 computed 对象中的 key 到 target(vm)上
  */
 export function defineComputed (
   target: any,

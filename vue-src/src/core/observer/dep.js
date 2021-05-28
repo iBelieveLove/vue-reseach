@@ -69,6 +69,7 @@ Dep.target = null
 const targetStack = []
 
 // 在需要进行依赖收集的时候调用，设置 Dep.target = watcher
+// 只有在watcher.get方法中target才为合法对象
 export function pushTarget (target: ?Watcher) {
   targetStack.push(target)
   Dep.target = target

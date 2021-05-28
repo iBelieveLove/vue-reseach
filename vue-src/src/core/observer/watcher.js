@@ -81,12 +81,14 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
-      this.getter = expOrFn
+      this.getter = expOrFn // computed属性进入此分支
     } else {
+      // watch方法进入此分支
       // 在 this.get 中执行 this.getter 时会触发依赖收集
       // 待后续 this.xx 更新时就会触发响应式
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
+        // 当getter获取为空时, 如watch一个不存在的变量
         this.getter = noop
         process.env.NODE_ENV !== 'production' && warn(
           `Failed watching path: "${expOrFn}" ` +
@@ -96,6 +98,7 @@ export default class Watcher {
         )
       }
     }
+    // 在watch函数中会主动执行一次get方法
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -105,6 +108,7 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   /**
+   * 依赖收集的核心方法, 只有在执行这个函数时, Dep.target才是有内容的
    * 执行 this.getter，并重新收集依赖
    * this.getter 是实例化 watcher 时传递的第二个参数，一个函数或者字符串，比如：updateComponent 或者 parsePath 返回的读取 this.xx 属性值的函数
    * 为什么要重新收集依赖？
@@ -141,9 +145,7 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
-   */
-  /**
-   * Add a dependency to this directive.
+   * 依赖收集, 添加一个依赖对象到newDeps和newDepIds 中, 在`dep.depend`方法中会调用
    * 两件事：
    *   1、添加 dep 给自己（watcher）
    *   2、添加自己（watcher）到 dep
