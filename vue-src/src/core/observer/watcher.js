@@ -223,6 +223,7 @@ export default class Watcher {
    */
   run () {
     if (this.active) {
+      // 调用 this.get 方法
       const value = this.get()
       if (
         value !== this.value ||

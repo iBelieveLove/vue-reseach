@@ -188,6 +188,7 @@
 
   /**
    * Hyphenate a camelCase string.
+   * @description 把驼峰字符转化为连字符
    */
   var hyphenateRE = /\B([A-Z])/g;
   var hyphenate = cached(function (str) {
@@ -1709,6 +1710,11 @@
 
 
 
+  /**
+   * @description 获取 props[key] 的默认值
+   * @param propOptions { [key: string]: PropOptions } 是key: PropOptions的map
+   * @param propsData { [key: string]: any } 是key: 对应propValue的map
+   */
   function validateProp (
     key,
     propOptions,
@@ -1719,6 +1725,7 @@
     var absent = !hasOwn(propsData, key);
     var value = propsData[key];
     // boolean casting
+    // 如果当前的是布尔类型的话, 则进行强制转换
     var booleanIndex = getTypeIndex(Boolean, prop.type);
     if (booleanIndex > -1) {
       if (absent && !hasOwn(prop, 'default')) {
@@ -1733,6 +1740,7 @@
       }
     }
     // check default value
+    // 使用默认值, 然后进行监听
     if (value === undefined) {
       value = getPropDefaultValue(vm, prop, key);
       // since the default value is a fresh copy,
@@ -1768,6 +1776,7 @@
     }
     // the raw prop value was also undefined from previous render,
     // return previous default value to avoid unnecessary watcher trigger
+    // 这里没明白, 实际在什么场景下生效
     if (vm && vm.$options.propsData &&
       vm.$options.propsData[key] === undefined &&
       vm._props[key] !== undefined
@@ -1783,6 +1792,7 @@
 
   /**
    * Assert whether a prop is valid.
+   * 报错信息, 忽略
    */
   function assertProp (
     prop,
@@ -1834,7 +1844,7 @@
   }
 
   var simpleCheckRE = /^(String|Number|Boolean|Function|Symbol)$/;
-
+  // 报错信息, 忽略
   function assertType (value, type) {
     var valid;
     var expectedType = getType(type);
@@ -1863,6 +1873,9 @@
    * because a simple equality check will fail when running
    * across different vms / iframes.
    */
+  /**
+   * 当传入的值是内置对象类型时, 返回对象类型的string, 比如传入fn = Boolean, 返回'Boolean'
+  */
   function getType (fn) {
     var match = fn && fn.toString().match(/^\s*function (\w+)/);
     return match ? match[1] : ''
@@ -1871,7 +1884,7 @@
   function isSameType (a, b) {
     return getType(a) === getType(b)
   }
-
+  // 获取对应类型index, 如果不存在时返回-1
   function getTypeIndex (type, expectedTypes) {
     if (!Array.isArray(expectedTypes)) {
       return isSameType(expectedTypes, type) ? 0 : -1
@@ -1884,6 +1897,7 @@
     return -1
   }
 
+  // 打印错误日志, 忽略
   function getInvalidTypeMessage (name, value, expectedTypes) {
     var message = "Invalid prop: type check failed for prop \"" + name + "\"." +
       " Expected " + (expectedTypes.map(capitalize).join(', '));
@@ -1904,7 +1918,7 @@
     }
     return message
   }
-
+  // 打印错误日志, 忽略
   function styleValue (value, type) {
     if (type === 'String') {
       return ("\"" + value + "\"")
@@ -1914,12 +1928,12 @@
       return ("" + value)
     }
   }
-
+  // 打印错误日志, 忽略
   function isExplicable (value) {
     var explicitTypes = ['string', 'number', 'boolean'];
     return explicitTypes.some(function (elem) { return value.toLowerCase() === elem; })
   }
-
+  // 打印错误日志, 忽略
   function isBoolean () {
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
@@ -4504,15 +4518,24 @@
    * Jobs with duplicate IDs will be skipped unless it's
    * pushed when the queue is being flushed.
    */
+  /**
+   * 将 watcher 放入 watcher 队列 
+   */
   function queueWatcher (watcher) {
     var id = watcher.id;
+    // 如果 watcher 已经存在，则跳过，不会重复入队
     if (has[id] == null) {
+      // 缓存 watcher.id，用于判断 watcher 是否已经入队
       has[id] = true;
       if (!flushing) {
+        // 当前没有处于刷新队列状态，watcher 直接入队
         queue.push(watcher);
       } else {
         // if already flushing, splice the watcher based on its id
         // if already past its id, it will be run next immediately.
+        // 已经在刷新队列了
+        // 从队列末尾开始倒序遍历，根据当前 watcher.id 找到它大于的 watcher.id 的位置，然后将自己插入到该位置之后的下一个位置
+        // 即将当前 watcher 放入已排序的队列中，且队列仍是有序的
         var i = queue.length - 1;
         while (i > index && queue[i].id > watcher.id) {
           i--;
@@ -4524,9 +4547,16 @@
         waiting = true;
 
         if ( !config.async) {
+          // 直接刷新调度队列
+          // 一般不会走这儿，Vue 默认是异步执行，如果改为同步执行，性能会大打折扣
           flushSchedulerQueue();
           return
         }
+        /**
+         * 熟悉的 nextTick => vm.$nextTick、Vue.nextTick
+         *   1、将 回调函数（flushSchedulerQueue） 放入 callbacks 数组
+         *   2、通过 pending 控制向浏览器任务队列中添加 flushCallbacks 函数
+         */
         nextTick(flushSchedulerQueue);
       }
     }

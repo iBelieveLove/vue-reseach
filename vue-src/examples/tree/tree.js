@@ -45,6 +45,20 @@ Vue.component('item', {
         this.model.children.length
     }
   },
+  watch: {
+    open: {
+      handler: async function (newVal){
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.warn('### open change', newVal)
+            resolve();
+          }, 500);
+        });
+      },
+      sync: true,
+      immediately: true
+    }
+  },
   methods: {
     toggle: function () {
       if (this.isFolder) {
