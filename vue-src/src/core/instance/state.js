@@ -16,7 +16,7 @@ import {
 import {
   warn,
   bind,
-  noop,
+  noop, // 空函数
   hasOwn,
   hyphenate,
   isReserved,
@@ -155,6 +155,7 @@ function initProps (vm: Component, propsOptions: Object) {
  */
 function initData (vm: Component) {
   let data = vm.$options.data
+  // 获取data属性时, 会传入当前vm实例
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
@@ -275,7 +276,7 @@ function initComputed (vm: Component, computed: Object) {
 }
 
 /**
- * 代理 computed 对象中的 key 到 target（vm）上
+ * 代理 computed 对象中的 key 到 target(vm)上
  */
 export function defineComputed (
   target: any,
@@ -466,6 +467,8 @@ export function stateMixin (Vue: Class<Component>) {
       warn(`$props is readonly.`, this)
     }
   }
+  // 将 data 属性和 props 属性挂载到 Vue.prototype 对象上
+  // 这样在程序中就可以通过 this.$data 和 this.$props 来访问 data 和 props 对象了
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 

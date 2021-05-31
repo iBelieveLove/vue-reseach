@@ -27,14 +27,13 @@ var data = {
     }
   ]
 }
-debugger;
 // define the item component
 Vue.component('item', {
   template: '#item-template',
   props: {
     model: Object
   },
-  data: function () {
+  data: function (vm) {
     return {
       open: false
     }
@@ -43,7 +42,31 @@ Vue.component('item', {
     isFolder: function () {
       return this.model.children &&
         this.model.children.length
-    }
+    },
+    // isClosed: function () {
+    //   return !this.open;
+    // }
+  },
+  watch: {
+    // open: async function (newVal, oldVal) {
+    //   new Promise((resolve) => {
+    //     setTimeout(() => {
+    //       console.warn('### open change: ', newVal);
+    //       resolve();
+    //     }, 200);
+    //   });
+    // },
+    // isFolder: {
+    //   immediate: true,
+    //   handler: async function (newVal, oldVal) {
+    //     new Promise((resolve) => {
+    //       setTimeout(() => {
+    //         console.warn('### isFolder change: ', newVal);
+    //         resolve();
+    //       }, 500);
+    //     });
+    //   }
+    // }
   },
   watch: {
     open: {
