@@ -6,4 +6,4 @@
 2. 构造平台编译选项[<sup>[2]</sup>](./create-compiler.js)
 3. 根据平台编译选项, 把`template`解析成ast树[<sup>[3]</sup>](./parser/index.js#parse), 其中包括解析HTML方法[<sup>[3.1]</sup>](./parser/html-parser.js), 解析text方法[<sup>[3.2]</sup>](./parser/text-parser.js)
 4. 根据ast树, 生成`render`函数, 参见[render函数](https://cn.vuejs.org/v2/api/#render)[<sup>[4]</sup>](./codegen/index.js)
-5. 
+5. 最后执行[`$mount`](../platforms/web/runtime/index.js)操作, 在执行mount操作时, 会新建一个渲染`watcher`, 从而实现模板数据的响应式.

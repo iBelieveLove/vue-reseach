@@ -2060,6 +2060,7 @@
     pending = false;
     var copies = callbacks.slice(0); // 这里就相当于完全拷贝
     callbacks.length = 0;
+    // 遍历 callbacks 数组，执行其中存储的每个 flushSchedulerQueue 函数
     for (var i = 0; i < copies.length; i++) {
       copies[i]();
     }
@@ -2076,6 +2077,7 @@
   // where microtasks have too high a priority and fire in between supposedly
   // sequential events (e.g. #4521, #6690, which have workarounds)
   // or even between bubbling of the same event (#6566).
+  // 可以看到 timerFunc 的作用很简单，就是将 flushCallbacks 函数放入浏览器的异步任务队列中
   var timerFunc;
 
   // The nextTick behavior leverages the microtask queue, which can be accessed
@@ -2087,13 +2089,20 @@
   /* istanbul ignore next, $flow-disable-line */
   if (typeof Promise !== 'undefined' && isNative(Promise)) {
     var p = Promise.resolve();
+    // 首选 Promise.resolve().then()
     timerFunc = function () {
+      // 在 微任务队列 中放入 flushCallbacks 函数
       p.then(flushCallbacks);
       // In problematic UIWebViews, Promise.then doesn't completely break, but
       // it can get stuck in a weird state where callbacks are pushed into the
       // microtask queue but the queue isn't being flushed, until the browser
       // needs to do some other work, e.g. handle a timer. Therefore we can
       // "force" the microtask queue to be flushed by adding an empty timer.
+      /**
+       * 在有问题的UIWebViews中，Promise.then不会完全中断，但是它可能会陷入怪异的状态，
+       * 在这种状态下，回调被推入微任务队列，但队列没有被刷新，直到浏览器需要执行其他工作，例如处理一个计时器。
+       * 因此，我们可以通过添加空计时器来“强制”刷新微任务队列。
+       */
       if (isIOS) { setTimeout(noop); }
     };
     isUsingMicroTask = true;
@@ -2102,6 +2111,7 @@
     // PhantomJS and iOS 7.x
     MutationObserver.toString() === '[object MutationObserverConstructor]'
   )) {
+    // MutationObserver 次之
     // Use MutationObserver where native Promise is not available,
     // e.g. PhantomJS, iOS7, Android 4.4
     // (#6466 MutationObserver is unreliable in IE11)
@@ -2120,21 +2130,37 @@
     // Fallback to setImmediate.
     // Technically it leverages the (macro) task queue,
     // but it is still a better choice than setTimeout.
+    // 再就是 setImmediate，它其实已经是一个宏任务了，但仍然比 setTimeout 要好
     timerFunc = function () {
       setImmediate(flushCallbacks);
     };
   } else {
     // Fallback to setTimeout.
+    // 最后没办法，则使用 setTimeout
     timerFunc = function () {
       setTimeout(flushCallbacks, 0);
     };
   }
 
+  /**
+   * 完成两件事：
+   *   1、用 try catch 包装 flushSchedulerQueue 函数，然后将其放入 callbacks 数组
+   *   2、如果 pending 为 false，表示现在浏览器的任务队列中没有 flushCallbacks 函数
+   *     如果 pending 为 true，则表示浏览器的任务队列中已经被放入了 flushCallbacks 函数，
+   *     待执行 flushCallbacks 函数时，pending 会被再次置为 false，表示下一个 flushCallbacks 函数可以进入
+   *     浏览器的任务队列了
+   * pending 的作用：保证在同一时刻，浏览器的任务队列中只有一个 flushCallbacks 函数
+   * @param {*} cb 接收一个回调函数 => flushSchedulerQueue
+   * @param {*} ctx 上下文
+   * @returns 
+   */
   function nextTick (cb, ctx) {
     var _resolve;
+    // 用 callbacks 数组存储经过包装的 cb 函数
     callbacks.push(function () {
       if (cb) {
         try {
+          // 用 try catch 包装回调函数，便于错误捕获
           cb.call(ctx);
         } catch (e) {
           handleError(e, ctx, 'nextTick');
@@ -2145,6 +2171,7 @@
     });
     if (!pending) {
       pending = true;
+      // 执行 timerFunc，在浏览器的任务队列中（首选微任务队列）放入 flushCallbacks 函数
       timerFunc();
     }
     // $flow-disable-line
@@ -4251,6 +4278,7 @@
     };
   }
 
+  // 在$mount时执行到这里
   function mountComponent (
     vm,
     el,
@@ -4299,7 +4327,7 @@
         measure(("vue " + name + " patch"), startTag, endTag);
       };
     } else {
-      // 执行 vm._render() 函数，得到 虚拟 DOM，并将 vnode 传递给 _update 方法，接下来就该到 patch 阶段了
+      // 指定vm._update方法
       updateComponent = function () {
         vm._update(vm._render(), hydrating);
       };
@@ -4533,6 +4561,10 @@
 
   /**
    * Flush both queues and run the watchers.
+   * 刷新队列，由 flushCallbacks 函数负责调用，主要做了如下两件事：
+   *   1、更新 flushing 为 ture，表示正在刷新队列，在此期间往队列中 push 新的 watcher 时需要特殊处理（将其放在队列的合适位置）
+   *   2、按照队列中的 watcher.id 从小到大排序，保证先创建的 watcher 先执行，也配合 第一步
+   *   3、遍历 watcher 队列，依次执行 watcher.before、watcher.run，并清除缓存的 watcher
    */
   function flushSchedulerQueue () {
     currentFlushTimestamp = getNow();
@@ -4547,17 +4579,27 @@
     //    user watchers are created before the render watcher)
     // 3. If a component is destroyed during a parent component's watcher run,
     //    its watchers can be skipped.
+    /**
+   * 做了三件事：
+   *   1、将 pending 置为 false
+   *   2、清空 callbacks 数组
+   *   3、执行 callbacks 数组中的每一个函数（比如 flushSchedulerQueue、用户调用 nextTick 传递的回调函数）
+   */
     queue.sort(function (a, b) { return a.id - b.id; });
 
     // do not cache length because more watchers might be pushed
     // as we run existing watchers
+    // 这里直接使用了 queue.length，动态计算队列的长度，没有缓存长度，是因为在执行现有 watcher 期间队列中可能会被 push 进新的 watcher
     for (index = 0; index < queue.length; index++) {
       watcher = queue[index];
+      // 执行 before 钩子，在使用 vm.$watch 或者 watch 选项时可以通过配置项（options.before）传递
       if (watcher.before) {
         watcher.before();
       }
+      // 将缓存的 watcher 清除
       id = watcher.id;
       has[id] = null;
+      // 执行 watcher.run，最终触发更新函数，比如 updateComponent 或者 获取 this.xx（xx 为用户 watch 的第二个参数），当然第二个参数也有可能是一个函数，那就直接执行
       watcher.run();
       // in dev build, check and stop circular updates.
       if ( has[id] != null) {
@@ -4579,7 +4621,12 @@
     // keep copies of post queues before resetting state
     var activatedQueue = activatedChildren.slice();
     var updatedQueue = queue.slice();
-
+    /**
+     * 重置调度状态：
+     *   1、重置 has 缓存对象，has = {}
+     *   2、waiting = flushing = false，表示刷新队列结束
+     *     waiting = flushing = false，表示可以像 callbacks 数组中放入新的 flushSchedulerQueue 函数，并且可以向浏览器的任务队列放入下一个 flushCallbacks 函数了
+     */
     resetSchedulerState();
 
     // call component updated and activated hooks
@@ -4688,17 +4735,17 @@
    */
   var Watcher = function Watcher (
     vm,
-    expOrFn,
+    expOrFn, // 如果是渲染watcher, 这里传入的是vm._update(render)函数, 如果是getter, 这里传入的是getter的函数, watch函数则传入watch的表达式如`data.msg`
     cb,
     options,
     isRenderWatcher
   ) {
     this.vm = vm;
     if (isRenderWatcher) {
-      vm._watcher = this;
+      vm._watcher = this; // 指定渲染watch
     }
     vm._watchers.push(this);
-    // options
+    // options, 如果是渲染watch, 则会传入before回调函数
     if (options) {
       this.deep = !!options.deep;
       this.user = !!options.user;
@@ -4864,6 +4911,7 @@
    */
   Watcher.prototype.run = function run () {
     if (this.active) {
+      // 调用 this.get 方法
       var value = this.get();
       if (
         value !== this.value ||

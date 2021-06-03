@@ -48,17 +48,17 @@ export default class Watcher {
 
   constructor (
     vm: Component,
-    expOrFn: string | Function,
+    expOrFn: string | Function, // 如果是渲染watcher, 这里传入的是vm._update(render)函数, 如果是getter, 这里传入的是getter的函数, watch函数则传入watch的表达式如`data.msg`
     cb: Function,
     options?: ?Object,
     isRenderWatcher?: boolean
   ) {
     this.vm = vm
     if (isRenderWatcher) {
-      vm._watcher = this
+      vm._watcher = this // 指定渲染watch
     }
     vm._watchers.push(this)
-    // options
+    // options, 如果是渲染watch, 则会传入before回调函数
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
