@@ -1,4 +1,4 @@
-## 编译器原理(大概)
+## 编译器原理(大概)[参考](https://juejin.cn/post/6959019076983209992)
 > 执行入口`new Vue().$mount('xxx')`, 在[`src\platforms\web\entry-runtime-with-compiler.js`](../platforms/web/entry-runtime-with-compiler.js)中
 主要步骤概览[<sup>[0]</sup>](./index.js):
 0. 如果存在`render`函数, 则直接返回, 否则获取到`template`, 继而执行`compileToFunctions`, [入口](../platforms/web/entry-runtime-with-compiler.js)
