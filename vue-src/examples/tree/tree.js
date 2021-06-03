@@ -89,10 +89,13 @@ Vue.component('item', {
   }
 })
 
+debugger
 // boot up the demo
 var demo = new Vue({
-  el: '#demo',
+  // el: '#demo',
   data: {
     treeData: data
   }
 })
+debugger
+demo.$mount('#demo');

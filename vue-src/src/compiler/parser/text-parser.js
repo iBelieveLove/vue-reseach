@@ -17,6 +17,12 @@ type TextParseResult = {
   tokens: Array<string | { '@binding': string }>
 }
 
+/**
+ * 解析元素中的文本表达式, 例如{{ 变量 }}
+ * @param {string} text 
+ * @param {RegExp} delimiters 默认为undefined 
+ * @returns 示例 { expression: "\n          "+_s(model.name)+"\n          ", tokens: ["\n          ", {@binding: "model.name"}, "\n"} 其中model.name就是表达式值
+ */
 export function parseText (
   text: string,
   delimiters?: [string, string]
