@@ -81,7 +81,7 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
-      this.getter = expOrFn // computed属性进入此分支
+      this.getter = expOrFn // computed属性进入此分支, 或者是渲染watcher
     } else {
       // watch方法进入此分支
       // 在 this.get 中执行 this.getter 时会触发依赖收集

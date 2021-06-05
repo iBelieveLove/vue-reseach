@@ -122,8 +122,9 @@ export function parse (
   delimiters = options.delimiters
 
   const stack = []
-  // 空格选项
+  // 空格选项, 编译时是否压缩(去掉空格)
   const preserveWhitespace = options.preserveWhitespace !== false
+  // 压缩空格选项, 后续判断是否等于'condense'
   const whitespaceOption = options.whitespace
   // 根节点，以 root 为根，处理后的节点都会按照层级挂载到 root 下，最后 return 的就是 root，一个 ast 语法树
   let root
@@ -141,10 +142,12 @@ export function parse (
   }
 
   /**
+   * 在标签闭合时调用, 自闭合标签(如<img />)也会调用
    * 主要做了 3 件事：
-   *   1、如果元素没有被处理过，即 el.processed 为 undefined，则调用 processElement 方法处理节点上的众多属性
-   *   2、让自己和父元素产生关系，将自己放到父元素的 children 数组中，并设置自己的 parent 属性为 currentParent
-   *   3、设置自己的子元素，将自己所有非插槽的子元素放到自己的 children 数组中
+   *   1、如果元素没有被处理过(不是input的v-model)，即 el.processed 为 undefined，则调用 processElement 方法处理节点上的众多属性
+   *   2. 如果是v-else/v-else-if的标签, 则加到v-if的ifConditions数组中
+   *   3、让自己和父元素产生关系，将自己放到父元素的 children 数组中，并设置自己的 parent 属性为 currentParent
+   *   4、设置自己的子元素，将自己所有非插槽的子元素放到自己的 children 数组中
    */
   function closeElement(element) {
     // 移除节点末尾的空格，当前 pre 标签内的元素除外
@@ -274,6 +277,7 @@ export function parse (
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
     /**
+     * 在解析到标签开始时调用
      * 主要做了以下 6 件事情:
      *   1、创建 AST 对象
      *   2、处理存在 v-model 指令的 input 标签，分别处理 input 为 checkbox、radio、其它的情况
@@ -584,7 +588,7 @@ function processRawAttrs (el) {
         name: list[i].name,
         value: JSON.stringify(list[i].value)
       }
-      if (list[i].start != null) {
+      if (list[i].start != null) { // 非生产环境才会有start标签
         attrs[i].start = list[i].start
         attrs[i].end = list[i].end
       }
@@ -733,18 +737,23 @@ type ForParseResult = {
   iterator2?: string;
 };
 
+/**
+ * 解析 v-for 的表达式，得到 { for: 可迭代对象， alias: 别名 }，比如 { for: arr, alias: item }或{alias: "child",for: "model.children",iterator1: "index"}
+ * @param {string} exp 传入的exp类似`item in list`
+ * @returns 
+ */
 export function parseFor (exp: string): ?ForParseResult {
   const inMatch = exp.match(forAliasRE)
   if (!inMatch) return
   const res = {}
-  res.for = inMatch[2].trim()
-  const alias = inMatch[1].trim().replace(stripParensRE, '')
-  const iteratorMatch = alias.match(forIteratorRE)
+  res.for = inMatch[2].trim() // list的变量名
+  const alias = inMatch[1].trim().replace(stripParensRE, '') // item变量名, 如果是(item, index)则去掉括号
+  const iteratorMatch = alias.match(forIteratorRE) // (item, index)这种循环
   if (iteratorMatch) {
     res.alias = alias.replace(forIteratorRE, '').trim()
-    res.iterator1 = iteratorMatch[1].trim()
+    res.iterator1 = iteratorMatch[1].trim() // 过滤到index
     if (iteratorMatch[2]) {
-      res.iterator2 = iteratorMatch[2].trim()
+      res.iterator2 = iteratorMatch[2].trim() // 
     }
   } else {
     res.alias = alias
@@ -756,6 +765,7 @@ export function parseFor (exp: string): ?ForParseResult {
  * 处理 v-if、v-else-if、v-else
  * 得到 el.if = "exp"，el.elseif = exp, el.else = true
  * v-if 属性会额外在 el.ifConditions 数组中添加 { exp, block } 对象
+ * v-else/v-else-if会在后续处理中被添加到ifConditions中
  */
  function processIf(el) {
   // 获取 v-if 属性的值，比如 <div v-if="test"></div>
@@ -781,6 +791,7 @@ export function parseFor (exp: string): ?ForParseResult {
   }
 }
 
+// 在v-else/v-else-if 表达式中调用
 // 在这里会检查v-else/v-else-if的合法性, 把合法的条件式放到v-if的ifConditions数组中
 function processIfConditions(el, parent) {
   // 找到 parent.children 中的最后一个元素节点
@@ -800,7 +811,8 @@ function processIfConditions(el, parent) {
 }
 
 /**
- * 找到 children 中的最后一个元素节点 
+ * 在v-else/v-else-if 表达式中调用
+ * 找到 children 中的最后一个元素节点
  */
 function findPrevElement (children: Array<any>): ASTElement | void {
   let i = children.length
@@ -1057,7 +1069,7 @@ function processSlotOutlet(el) {
   }
   // <component :is="compName" inline-template>xx</component>
   // 组件上存在 inline-template 属性，进行标记：el.inlineTemplate = true
-  // 表示组件开始和结束标签内的内容作为组件模版出现，而不是作为插槽别分发，方便定义组件模版
+  // 表示组件开始和结束标签内的内容作为组件模版出现，而不是作为插槽分发，方便定义组件模版
   if (getAndRemoveAttr(el, 'inline-template') != null) {
     el.inlineTemplate = true
   }
@@ -1089,7 +1101,7 @@ function processSlotOutlet(el) {
       el.hasBindings = true
       // modifiers，在属性名上解析修饰符，比如 xx.lazy
       modifiers = parseModifiers(name.replace(dirRE, ''))
-      // support .foo shorthand syntax for the .prop modifier
+      // support .foo shorthand syntax for the .prop modifier // 不太确定这里指的是什么写法
       if (process.env.VBIND_PROP_SHORTHAND && propBindRE.test(name)) {
         // 为 .props 修饰符支持 .foo 速记写法
         (modifiers || (modifiers = {})).prop = true
@@ -1210,7 +1222,7 @@ function processSlotOutlet(el) {
         }
       }
     } else {
-      // 当前属性不是指令
+      // 当前属性不是指令, 如id="aaa"
       // literal attribute
       if (process.env.NODE_ENV !== 'production') {
         const res = parseText(value, delimiters)

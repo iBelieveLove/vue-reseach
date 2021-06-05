@@ -42,6 +42,10 @@ export const createCompiler = createCompilerCreator(
      *   children: [ **** ],
      *   if: string, v-if的表达式
      *   ifConditions: [],
+     *   
+     *   slotTarget:  插槽名
+     *   slotTargetDynamic: 是否动态插槽
+     *   slotScope:  作用域插槽的值, 比如
      *   type: number, 1表示为tag, 2表示带表达式的text, 3表示纯text
      * }
      */

@@ -98,7 +98,7 @@ function flushSchedulerQueue () {
   // 这里直接使用了 queue.length，动态计算队列的长度，没有缓存长度，是因为在执行现有 watcher 期间队列中可能会被 push 进新的 watcher
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
-    // 执行 before 钩子，在使用 vm.$watch 或者 watch 选项时可以通过配置项（options.before）传递
+    // 执行 before 钩子，在使用 vm.$watch 或者 watch 选项时可以通过配置项（options.before）传递(渲染watcher会有这个方法)
     if (watcher.before) {
       watcher.before()
     }

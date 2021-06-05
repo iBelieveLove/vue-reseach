@@ -28,6 +28,14 @@ export function initRender (vm: Component) {
   // so that we get proper render context inside it.
   // args order: tag, data, children, normalizationType, alwaysNormalize
   // internal version is used by render functions compiled from templates
+  /**
+   * 定义 _c，它是 createElement 的一个柯里化方法
+   * @param {*} a 标签名
+   * @param {*} b 属性的 JSON 字符串
+   * @param {*} c 子节点数组
+   * @param {*} d 节点的规范化类型
+   * @returns VNode or Array<VNode>
+   */
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
@@ -93,12 +101,12 @@ export function renderMixin (Vue: Class<Component>) {
       // separately from one another. Nested component's render fns are called
       // when parent component is patched.
       currentRenderingInstance = vm
-      // 执行 render 函数，生成 vnode
+      // 执行 (可以是用户传入的也可以是模板解析成的)render 函数，生成 vnode
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)
       // 到这儿，说明执行 render 函数时出错了
-    // 开发环境渲染错误信息，生产环境返回之前的 vnode，以防止渲染错误导致组件空白
+      // 开发环境渲染错误信息，生产环境返回之前的 vnode，以防止渲染错误导致组件空白
       // return error render result,
       // or previous vnode to prevent render error causing blank component
       /* istanbul ignore else */

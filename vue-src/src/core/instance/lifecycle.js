@@ -58,8 +58,8 @@ export function initLifecycle (vm: Component) {
 
 export function lifecycleMixin(Vue: Class<Component>) {
   /**
- * 负责更新页面，页面首次渲染和后续更新的入口位置，也是 patch 的入口位置 
- */
+   * 负责更新页面，页面首次渲染和后续更新的入口位置，也是 patch 的入口位置, 在
+   */
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el

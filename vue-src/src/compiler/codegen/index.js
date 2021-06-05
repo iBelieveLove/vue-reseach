@@ -67,6 +67,12 @@ export function generate(
   }
 }
 
+/**
+ * 生成渲染函数的字符串, 递归执行
+ * @param {*} el 
+ * @param {*} state 
+ * @returns 
+ */
 export function genElement(el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre
