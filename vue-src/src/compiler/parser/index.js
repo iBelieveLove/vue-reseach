@@ -1101,7 +1101,8 @@ function processSlotOutlet(el) {
       el.hasBindings = true
       // modifiers，在属性名上解析修饰符，比如 xx.lazy
       modifiers = parseModifiers(name.replace(dirRE, ''))
-      // support .foo shorthand syntax for the .prop modifier // 不太确定这里指的是什么写法
+      // support .foo shorthand syntax for the .prop modifier
+      // 这里指的是https://cn.vuejs.org/v2/api/#v-bind 修饰符.prop - 作为一个 DOM property 绑定而不是作为 attribute 绑定
       if (process.env.VBIND_PROP_SHORTHAND && propBindRE.test(name)) {
         // 为 .props 修饰符支持 .foo 速记写法
         (modifiers || (modifiers = {})).prop = true
