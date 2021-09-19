@@ -4570,7 +4570,7 @@
         measure(("vue " + name + " patch"), startTag, endTag);
       };
     } else {
-      // 指定vm._update方法
+      // 指定vm._update方法, 在render的时候, 会创建子组件.
       updateComponent = function () {
         vm._update(vm._render(), hydrating);
       };
@@ -4579,6 +4579,7 @@
     // we set this to vm._watcher inside the watcher's constructor
     // since the watcher's initial patch may call $forceUpdate (e.g. inside child
     // component's mounted hook), which relies on vm._watcher being already defined
+    // 在new Watcher的时候, 会执行一次updateComponent操作.
     new Watcher(vm, updateComponent, noop, {
       before: function before () {
         if (vm._isMounted && !vm._isDestroyed) {
@@ -8515,6 +8516,7 @@
     );
   }
 
+  // 创建元素时调用, 绑定事件到元素上.
   function updateDOMListeners (oldVnode, vnode) {
     if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
       return
@@ -11722,7 +11724,8 @@
         el.hasBindings = true;
         // modifiers，在属性名上解析修饰符，比如 xx.lazy
         modifiers = parseModifiers(name.replace(dirRE, ''));
-        // support .foo shorthand syntax for the .prop modifier // 不太确定这里指的是什么写法
+        // support .foo shorthand syntax for the .prop modifier
+        // 这里指的是https://cn.vuejs.org/v2/api/#v-bind 修饰符.prop - 作为一个 DOM property 绑定而不是作为 attribute 绑定
         if (modifiers) {
           // 属性中的修饰符去掉，得到一个干净的属性名
           name = name.replace(modifierRE, '');

@@ -47,7 +47,7 @@ Vue.component('item', {
     //   return !this.open;
     // }
   },
-  watch: {
+  // watch: {
     // open: async function (newVal, oldVal) {
     //   new Promise((resolve) => {
     //     setTimeout(() => {
@@ -67,7 +67,7 @@ Vue.component('item', {
     //     });
     //   }
     // }
-  },
+  // },
   watch: {
     open: {
       handler: async function (newVal){
@@ -103,13 +103,23 @@ Vue.component('item', {
   }
 })
 
-debugger
 // boot up the demo
 var demo = new Vue({
   // el: '#demo',
   data: {
     treeData: data
+  },
+  created: async function () {
+    console.warn('#### created enter');
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 500);
+    })
+    console.warn('##### created end');
+  },
+  mounted: function () {
+    console.warn('#### mounted');
   }
 })
-debugger
 demo.$mount('#demo');

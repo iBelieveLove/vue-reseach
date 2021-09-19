@@ -10,8 +10,7 @@
 * ■ 具体观察者（Concrete Observer）角色：该角色实现抽象观察者所要求的更新接口，以便使自身的状态与主题的状态相协调。
 */
 
-##
-双向绑定的两个核心类为dep.js 和 watcher.js
+## 响应式原理的两个核心类为dep.js 和 watcher.js
 
 > https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty 使用`Object.defineProperty`来设置一个对象字段时, 如果设置了setter/getter方法, 则此时在访问对象字段/更新对象字段时, 会调用setter/getter方法.
 ## array.js

@@ -102,6 +102,7 @@ function remove (
   )
 }
 
+// 创建元素时调用, 绑定事件到元素上.
 function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
     return

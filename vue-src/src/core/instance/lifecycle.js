@@ -207,7 +207,7 @@ export function mountComponent (
       measure(`vue ${name} patch`, startTag, endTag)
     }
   } else {
-    // 指定vm._update方法
+    // 指定vm._update方法, 在render的时候, 会创建子组件.
     updateComponent = () => {
       vm._update(vm._render(), hydrating)
     }
@@ -216,6 +216,7 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  // 在new Watcher的时候, 会执行一次updateComponent操作.
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
