@@ -8458,6 +8458,7 @@
   // safe to exclude.
   var useMicrotaskFix = isUsingMicroTask && !(isFF && Number(isFF[1]) <= 53);
 
+  //  绑定事件到元素上.
   function add$1 (
     name,
     handler,
@@ -8516,7 +8517,7 @@
     );
   }
 
-  // 创建元素时调用, 绑定事件到元素上.
+  // 创建元素时调用, 更新
   function updateDOMListeners (oldVnode, vnode) {
     if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
       return

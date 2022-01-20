@@ -505,7 +505,7 @@ export function parse (
           text = text.replace(whitespaceRE, ' ')
         }
         let res
-        // 基于 text 生成 AST 对象
+        // 基于 text 生成 AST 对象{{}}
         let child: ?ASTNode
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
           // 文本中存在表达式（即有界定符）
@@ -708,6 +708,7 @@ function processRawAttrs (el) {
 
 /**
  * 处理 v-for，将结果设置到 el 对象上，得到:
+ *  (item, index) in arr
  *   el.for = 可迭代对象，比如 arr
  *   el.alias = 别名，比如 item
  * @param {*} el 元素的 ast 对象
@@ -768,7 +769,7 @@ export function parseFor (exp: string): ?ForParseResult {
  * v-else/v-else-if会在后续处理中被添加到ifConditions中
  */
  function processIf(el) {
-  // 获取 v-if 属性的值，比如 <div v-if="test"></div>
+  // 获取 v-if 属性的值，比如 <div v-if="test && test1"></div>
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
     // el.if = "test"
